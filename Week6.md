@@ -68,36 +68,40 @@ JOIN은 여러 테이블을 연결해서 분석 질문에 답하기 위해 반�
 ## 01.
 
 ```
-개념 이름:
-개념 설명:
+개념 이름: INNER JOIN
+개념 설명: 두 테이블에서 JOIN 조건에 일치하는 행만 연결해 반환하는 방법이다. 한쪽 테이블에만 존재하거나 JOIN key가 일치하지 않는 행은 결과에서 제외된다.
 예시 쿼리:
+SELECT b.book_id, a.author_name
+FROM book AS b
+INNER JOIN author AS a
+  ON b.author_id = a.author_id;
 ```
 
 ## 02.
 
 ```
-개념 이름:
-개념 설명:
+개념 이름: LEFT JOIN
+개념 설명: 왼쪽 테이블의 모든 행을 유지하고, 오른쪽 테이블에서 JOIN 조건에 맞는 행을 연결하는 방법이다. 오른쪽에 일치하는 행이 없으면 오른쪽 테이블의 컬럼은 NULL로 표시된다.
 예시 쿼리:
+SELECT i.animal_id, o.animal_id AS out_animal_id
+FROM animal_ins AS i
+LEFT JOIN animal_outs AS o
+  ON i.animal_id = o.animal_id;
 ```
 
 ## (선택) 03.
 
 ```
-개념 이름:
-개념 설명:
-헷갈린 점:
+개념 이름: JOIN key
+개념 설명: 두 테이블에서 서로 관련된 행을 찾기 위해 ON 절에서 비교하는 컬럼이다. 보통 한 테이블의 기본 키와 다른 테이블의 외래 키를 연결한다.
+헷갈린 점: 컬럼 이름이 같다고 항상 같은 의미의 키인 것은 아니므로, 테이블 관계와 컬럼의 의미를 확인한 뒤 연결해야 한다.
 ```
 
 ---
 
 # 2️⃣ 수행 인증란
 
-아래 중 하나 이상을 첨부해주세요.
-
-- 강의 수강 화면 캡처
-- JOIN 문제 풀이 정답 화면 캡처
-- JOIN 전후 결과 row 수를 비교한 캡처 또는 메모
+![alt text](image-5.png)
 
 ---
 
@@ -112,9 +116,17 @@ JOIN은 여러 테이블을 연결해서 분석 질문에 답하기 위해 반�
 풀이 과정:
 
 ```
-- 사용한 테이블:
-- JOIN key:
-- 날짜를 출력한 형식:
+- 사용한 테이블: BOOK, AUTHOR
+- JOIN key: BOOK.AUTHOR_ID = AUTHOR.AUTHOR_ID
+- 날짜를 출력한 형식: DATE_FORMAT(BOOK.PUBLISHED_DATE, '%Y-%m-%d')
+- 정답 쿼리:
+SELECT b.BOOK_ID, a.AUTHOR_NAME,
+       DATE_FORMAT(b.PUBLISHED_DATE, '%Y-%m-%d') AS PUBLISHED_DATE
+FROM BOOK AS b
+INNER JOIN AUTHOR AS a
+  ON b.AUTHOR_ID = a.AUTHOR_ID
+WHERE b.CATEGORY = '경제'
+ORDER BY b.PUBLISHED_DATE;
 ```
 
 <!-- 정답을 맞추게 되면, 정답입니다. 이 부분을 캡처해서 이 주석을 지우시고 첨부해주시면 됩니다. -->
@@ -126,9 +138,17 @@ JOIN은 여러 테이블을 연결해서 분석 질문에 답하기 위해 반�
 풀이 과정:
 
 ```
-- 연결한 테이블:
-- JOIN key:
-- 집계한 값:
+- 연결한 테이블: PRODUCT, OFFLINE_SALE
+- JOIN key: PRODUCT.PRODUCT_ID = OFFLINE_SALE.PRODUCT_ID
+- 집계한 값: 상품별 판매액의 합계(SALES_AMOUNT * PRICE)
+- 정답 쿼리:
+SELECT p.PRODUCT_CODE,
+       (p.PRICE * SUM(s.SALES_AMOUNT)) AS SALES
+FROM PRODUCT AS p
+INNER JOIN OFFLINE_SALE AS s
+  ON p.PRODUCT_ID = s.PRODUCT_ID
+GROUP BY p.PRODUCT_ID, p.PRODUCT_CODE, p.PRICE
+ORDER BY SALES DESC, p.PRODUCT_CODE;
 ```
 
 <!-- 정답을 맞추게 되면, 정답입니다. 이 부분을 캡처해서 이 주석을 지우시고 첨부해주시면 됩니다. -->
@@ -140,9 +160,16 @@ JOIN은 여러 테이블을 연결해서 분석 질문에 답하기 위해 반�
 풀이 과정:
 
 ```
-- 기준이 되는 왼쪽 테이블:
-- LEFT JOIN이 필요한 이유:
-- NULL이 발생하는 경우:
+- 기준이 되는 왼쪽 테이블: ANIMAL_INS
+- LEFT JOIN이 필요한 이유: 입양 기록이 있는 동물과 연결하되, 입양 기록이 없는 동물도 결과에 남겨야 하기 때문이다.
+- NULL이 발생하는 경우: ANIMAL_INS의 동물과 일치하는 ANIMAL_OUTS 행이 없을 때 ANIMAL_OUTS의 컬럼이 NULL이 된다.
+- 정답 쿼리:
+SELECT i.ANIMAL_ID, i.NAME
+FROM ANIMAL_INS AS i
+LEFT JOIN ANIMAL_OUTS AS o
+  ON i.ANIMAL_ID = o.ANIMAL_ID
+WHERE o.ANIMAL_ID IS NULL
+ORDER BY i.ANIMAL_ID;
 ```
 
 <!-- 정답을 맞추게 되면, 정답입니다. 이 부분을 캡처해서 이 주석을 지우시고 첨부해주시면 됩니다. -->
@@ -154,10 +181,17 @@ JOIN은 여러 테이블을 연결해서 분석 질문에 답하기 위해 반�
 풀이 과정:
 
 ```
-- 사용한 테이블:
-- JOIN key:
-- 비교한 날짜 컬럼:
-- 정렬 기준:
+- 사용한 테이블: ANIMAL_INS, ANIMAL_OUTS
+- JOIN key: ANIMAL_INS.ANIMAL_ID = ANIMAL_OUTS.ANIMAL_ID
+- 비교한 날짜 컬럼: ANIMAL_INS.DATETIME, ANIMAL_OUTS.DATETIME
+- 정렬 기준: ANIMAL_INS.DATETIME 오름차순
+- 정답 쿼리:
+SELECT i.ANIMAL_ID, i.NAME
+FROM ANIMAL_INS AS i
+INNER JOIN ANIMAL_OUTS AS o
+  ON i.ANIMAL_ID = o.ANIMAL_ID
+WHERE i.DATETIME > o.DATETIME
+ORDER BY i.DATETIME;
 ```
 
 <!-- 정답을 맞추게 되면, 정답입니다. 이 부분을 캡처해서 이 주석을 지우시고 첨부해주시면 됩니다. -->
@@ -182,7 +216,6 @@ JOIN 개념이 헷갈린다면 아래 자료를 함께 참고해도 좋습니다
 ```
 
 수고하셨습니다!
-
 
 
 
